@@ -1,27 +1,17 @@
 const express = require('express');
-const dotenv = require('dotenv');
+require('dotenv').config();
+const cors = require('cors');
 const app = express();
-const weatherData = require('./weather.json');
+// const weatherData = require('./weather.json');
+const axios = require('axios');
 
-dotenv.config();
+
 
 const port = process.env.PORT || 3000;
 
-// class Forecast {
-//   constructor(type = 'city') {
-//     if (typeof type !== 'string') throw new Error('List type error');
-//     let { city_name, items } = weatherData.lists.find(list => list.city_name === type) || {city_name: null, items: []};
-//     this.type = city_name;
-//     this.itemValues = items;
-//   }
-//   getCity() {
-//     return this.itemValues.map(item => ({
-//       name: item.name,
-//       latitude: item.latitude,
-//       longitude: item.longitude
-//     }));
-//   }
-// }
+// middleware
+app.use(cors());
+
 
 
 class Forecast {
@@ -34,55 +24,35 @@ class Forecast {
 
 
 // Define a route for the root endpoint
-app.get('/weather', (req, res) => {
+app.get('/weather', async (req, res) => {
+  console.log('we made it to the / weather route  ')
+  // http://localhost:3001/weather?searchQuery=Seattle
 
   const { searchQuery, lat, lon } = req.query;
-  try {
-  let matchingCityWeather = weatherData.find(weatherDay => weatherDay.lat === lat);
+  const url = `http://api.weatherbit.io/v2.0/forecast/daily?key=${process.env.WEATHERBIT_ACCESS_KEY}&lang=en&lat=${lat}&lon=${lon}&days=5`
 
-  let formattedForecast = matchingCityWeather.data.map(eachWeatherDay => {
-    return new Forecast(eachWeatherDay);
-  }
-  );
-  res.json(formattedForecast);
-  
+  const weatherResponse = await axios.get(url);
+  // console.log(weatherResponse.data);
+
+  try {
+    // let matchingCityWeather = weatherData.find(weatherDay => weatherDay.city_name === searchQuery);
+
+
+    let formattedForecast = weatherResponse.data.data.map(eachWeatherDay => {
+      return new Forecast(eachWeatherDay);
+
+    }
+    );
+    console.log(formattedForecast);
+    res.json(formattedForecast);
+
   } catch {
     res.send('No matching city')
   }
 
 
-
-
-
-
-
 }
 );
-
-
-
-//   const cityForecast = new forecast(searchQuery);
-
-//   const cityInfo = {
-//     city: cityList.type,
-//     items: cityList.getCity()
-//   };
-
-
-//   // Assuming a simple response format for demonstration purposes
-//   const response = {
-//     latitude: parseFloat(lat),
-//     longitude: parseFloat(lon),
-//     searchQuery: searchQuery,
-//     weather: {
-//       city: weatherData.city,
-//       latitude: weatherData.latitude,
-//       longitude: weatherData.longitude
-//     }
-//   };
-
-//   res.json(response);
-// });
 
 
 
