@@ -17,6 +17,8 @@ app.get('/movies', getMovies);
 
 
 
+
+
 // Start the server and listen on the specified port
 app.listen(3001, () => {
   console.log(`Server is running on port ${port}`);
